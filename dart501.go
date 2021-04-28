@@ -8,8 +8,9 @@ import (
 )
 
 type Player struct {
-	Name  string
-	Score int
+	Name    string
+	Score   int
+	Average float32
 }
 
 type PlayerList []Player
@@ -35,7 +36,9 @@ func main() {
 	players = addPlayers(players, numPlayers)
 
 	for {
-		game(players)
+		playersInGame := make(PlayerList, numPlayers)
+		copy(playersInGame, players)
+		game(playersInGame)
 		fmt.Print("New Game? (y/n): ")
 		var answer string
 		fmt.Scanln(&answer)
@@ -57,7 +60,9 @@ func game(players PlayerList) {
 				finished = false
 				fmt.Print(players)
 				fmt.Printf("Round %v\n", round)
-				players[pid].Score = oneRound(player)
+				roundScore := oneRound(player)
+				players[pid].Score -= roundScore
+				players[pid].Average = updateAverage(player, round, roundScore)
 			} else {
 				continue
 			}
@@ -79,7 +84,7 @@ func game(players PlayerList) {
 
 func oneRound(p Player) int {
 	fmt.Printf("%v:\n", p.Name)
-	score := 0
+	roundScore := 0
 	throwNum := 0
 	for throwNum < 3 {
 		fmt.Printf("%v. ", throwNum+1)
@@ -102,21 +107,21 @@ func oneRound(p Player) int {
 		} else {
 			throwNum++
 		}
-		score += throwScore
+		roundScore += throwScore
 	}
-	fmt.Printf("Score: %v\n\n", score)
-	result := p.Score - score
-	if result >= 0 {
-		return result
+	fmt.Printf("Round Score: %v\n\n", roundScore)
+	newScore := p.Score - roundScore
+	if newScore < 0 {
+		return 0
 	}
-	return p.Score
+	return roundScore
 }
 
 func addPlayers(players PlayerList, N int) []Player {
 
 	for player := range players {
 
-		players[player] = Player{Name: "unnamed", Score: 501}
+		players[player] = Player{Name: "unnamed", Score: 501, Average: 0.0}
 	}
 
 	for player := range players {
@@ -137,22 +142,28 @@ func addPlayers(players PlayerList, N int) []Player {
 
 func (p PlayerList) String() string {
 	out := "\n----------------"
-
 	for range p {
-		out += fmt.Sprint("----------------")
+		out += "----------------"
 	}
-	out += fmt.Sprintf("\n\t\t")
+
+	out += "\n\t\t"
 	for player := range p {
 		out += fmt.Sprintf("%v\t\t", p[player].Name)
 	}
-	out += fmt.Sprintf("\n\nRest:\t\t")
+
+	out += "\n\nAverage:\t"
+	for player := range p {
+		out += fmt.Sprintf("(%.1f)\t\t", p[player].Average)
+	}
+
+	out += "\n\nRest:\t\t"
 	for player := range p {
 		out += fmt.Sprintf("%v\t\t", p[player].Score)
 	}
-	out += "\n----------------"
 
+	out += "\n----------------"
 	for range p {
-		out += fmt.Sprint("----------------")
+		out += "----------------"
 	}
 	out += "\n\n"
 	return out
@@ -168,6 +179,8 @@ func ctrlC() {
 	os.Exit(1)
 }
 
-func removePlayer(l PlayerList, index int) PlayerList {
-	return append(l[:index], l[index+1:]...)
+func updateAverage(player Player, round int, roundScore int) float32 {
+	newAverage := player.Average*(float32(round-1)) + float32(roundScore)
+	newAverage /= float32(round)
+	return newAverage
 }
