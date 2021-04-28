@@ -51,19 +51,22 @@ func game(players PlayerList) {
 	finished := false
 	for !finished {
 		round++
+		finished = true
 		for pid, player := range players {
-			fmt.Print(players)
-			fmt.Printf("Round %v\n", round)
-			players[pid].Score = oneRound(player)
+			if players[pid].Score > 0 {
+				finished = false
+				fmt.Print(players)
+				fmt.Printf("Round %v\n", round)
+				players[pid].Score = oneRound(player)
+			} else {
+				continue
+			}
 
 			if players[pid].Score == 0 {
 				fmt.Printf("\n%v WINS!!\nOther players continue? (y/n): ", players[pid].Name)
 				var answer string
 				fmt.Scanln(&answer)
-				if answer == "y" && len(players) > 0 {
-					players = removePlayer(players, pid)
-					break
-				} else {
+				if answer == "n" {
 					finished = true
 					break
 				}
@@ -103,10 +106,10 @@ func oneRound(p Player) int {
 	}
 	fmt.Printf("Score: %v\n\n", score)
 	result := p.Score - score
-	if result > 0 {
+	if result >= 0 {
 		return result
 	}
-	return 0
+	return p.Score
 }
 
 func addPlayers(players PlayerList, N int) []Player {
