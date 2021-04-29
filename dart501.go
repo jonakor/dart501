@@ -23,11 +23,13 @@ func main() {
 	fmt.Println("Welcome to Dart 501")
 	fmt.Println("-------------------")
 	fmt.Println("Press 'Ctrl + c' at any time to quit")
-
 	fmt.Println()
-	fmt.Print("Number of players: ")
-	var numPlayers int
-	fmt.Scanf("%d\n", &numPlayers)
+
+	numPlayers := 0
+	for numPlayers == 0 {
+		fmt.Print("Number of players: ")
+		fmt.Scanf("%d\n", &numPlayers)
+	}
 
 	players := make(PlayerList, numPlayers)
 
@@ -90,6 +92,10 @@ func oneRound(p Player) int {
 		fmt.Printf("%v. ", throwNum+1)
 		var text string
 		fmt.Scanln(&text)
+		if len(text) == 0 {
+			continue
+		}
+
 		throwScore := 0
 		switch text[0] {
 		case 'd':
