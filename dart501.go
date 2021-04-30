@@ -69,7 +69,7 @@ func game(players PlayerList) {
 				if roundScore > 0 && (player.Score-roundScore) >= 0 {
 					players[pid].Score -= roundScore
 					players[pid].ActiveRounds++
-					players[pid].Average = updateAverage(player, roundScore)
+					players[pid].Average = updateAverage(players[pid], roundScore)
 				}
 
 			} else {
