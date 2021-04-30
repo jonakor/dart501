@@ -29,7 +29,9 @@ func main() {
 	numPlayers := 0
 	for numPlayers == 0 {
 		fmt.Print("Number of players: ")
-		fmt.Scanf("%d\n", &numPlayers)
+		var input string
+		fmt.Scanln(&input)
+		numPlayers, _ = strconv.Atoi(input)
 	}
 
 	players := make(PlayerList, numPlayers)
