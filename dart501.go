@@ -8,9 +8,10 @@ import (
 )
 
 type Player struct {
-	Name    string
-	Score   int
-	Average float32
+	Name         string
+	Score        int
+	ActiveRounds int
+	Average      float32
 }
 
 type PlayerList []Player
@@ -62,9 +63,15 @@ func game(players PlayerList) {
 				finished = false
 				fmt.Print(players)
 				fmt.Printf("Round %v\n", round)
+
+				fmt.Printf("%v:\n", player.Name)
 				roundScore := oneRound(player)
-				players[pid].Score -= roundScore
-				players[pid].Average = updateAverage(player, round, roundScore)
+				if roundScore > 0 && (player.Score-roundScore) >= 0 {
+					players[pid].Score -= roundScore
+					players[pid].ActiveRounds++
+					players[pid].Average = updateAverage(player, roundScore)
+				}
+
 			} else {
 				continue
 			}
@@ -85,7 +92,6 @@ func game(players PlayerList) {
 }
 
 func oneRound(p Player) int {
-	fmt.Printf("%v:\n", p.Name)
 	roundScore := 0
 	throwNum := 0
 	for throwNum < 3 {
@@ -116,10 +122,6 @@ func oneRound(p Player) int {
 		roundScore += throwScore
 	}
 	fmt.Printf("Round Score: %v\n\n", roundScore)
-	newScore := p.Score - roundScore
-	if newScore < 0 {
-		return 0
-	}
 	return roundScore
 }
 
@@ -127,7 +129,7 @@ func addPlayers(players PlayerList, N int) []Player {
 
 	for player := range players {
 
-		players[player] = Player{Name: "unnamed", Score: 501, Average: 0.0}
+		players[player] = Player{Name: "unnamed", Score: 501, Average: 0.0, ActiveRounds: 0}
 	}
 
 	for player := range players {
@@ -185,7 +187,8 @@ func ctrlC() {
 	os.Exit(1)
 }
 
-func updateAverage(player Player, round int, roundScore int) float32 {
+func updateAverage(player Player, roundScore int) float32 {
+	round := player.ActiveRounds
 	newAverage := player.Average*(float32(round-1)) + float32(roundScore)
 	newAverage /= float32(round)
 	return newAverage
